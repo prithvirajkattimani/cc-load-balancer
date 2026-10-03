@@ -1,6 +1,6 @@
 # Load-Balanced Multi-Instance App (Nginx + Docker + Redis)
 
-![CI](https://github.com/<your-username>/cc-load-balancer/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/prithvirajkattimani/cc-load-balancer/actions/workflows/ci.yml/badge.svg)
 
 Cloud Computing graded assessment: **Option 3, Load-balanced multi-instance app**.
 
@@ -59,7 +59,7 @@ docs/PRESENTATION.md  2-3 min presentation script + viva Q&A
 Requires Docker + Docker Compose.
 
 ```bash
-git clone https://github.com/<your-username>/cc-load-balancer.git
+git clone https://github.com/prithvirajkattimani/cc-load-balancer.git
 cd cc-load-balancer
 docker compose up --build
 ```
@@ -121,7 +121,7 @@ Local safety net: `cp scripts/pre-push .git/hooks/pre-push && chmod +x .git/hook
    ```
 3. Clone and start:
    ```bash
-   git clone https://github.com/<your-username>/cc-load-balancer.git
+   git clone https://github.com/prithvirajkattimani/cc-load-balancer.git
    cd cc-load-balancer && docker compose up -d --build
    ```
 4. Open `http://<EC2-PUBLIC-IP>:8080`.
