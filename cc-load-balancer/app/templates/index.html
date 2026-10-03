@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Load Balancer Demo</title>
+<style>
+  body { font-family: system-ui, sans-serif; background:#0f172a; color:#e2e8f0; margin:0; padding:24px; }
+  h1 { margin:0 0 4px; } p.sub { color:#94a3b8; margin:0 0 20px; }
+  button { background:#38bdf8; color:#0f172a; border:0; padding:10px 16px; border-radius:8px; font-weight:600; cursor:pointer; margin-right:8px; }
+  button.alt { background:#334155; color:#e2e8f0; }
+  .card { background:#1e293b; border-radius:12px; padding:16px; margin-top:16px; }
+  .row { display:flex; align-items:center; margin:10px 0; }
+  .row .name { width:90px; font-weight:600; }
+  .bar { height:22px; background:#38bdf8; border-radius:6px; transition:width .3s; min-width:2px; }
+  .row .num { margin-left:10px; color:#94a3b8; }
+  #log { font-family: ui-monospace, monospace; font-size:13px; color:#94a3b8; max-height:200px; overflow:auto; }
+</style>
+</head>
+<body>
+  <h1>Load Balancer Demo</h1>
+  <p class="sub">Nginx (round robin) &rarr; 3 Flask containers &rarr; shared Redis counter</p>
+  <button id="one">Send 1 request</button>
+  <button id="twenty">Send 20</button>
+  <button id="auto" class="alt">Auto: off</button>
+  <button id="reset" class="alt">Reset</button>
+
+  <div class="card"><h3>Requests served per instance (this browser session)</h3><div id="bars"></div></div>
+  <div class="card"><h3>Shared counter in Redis (all clients)</h3><div id="shared">-</div></div>
+  <div class="card"><h3>Log</h3><div id="log"></div></div>
+
+<script>
+  const counts = {};
+  let timer = null;
+
+  async function hit() {
+    const r = await fetch('/api/whoami', { cache: 'no-store' });
+    const d = await r.json();
+    counts[d.instance] = (counts[d.instance] || 0) + 1;
+    const line = document.createElement('div');
+    line.textContent = 'served by ' + d.instance + ' (container ' + d.hostname + ') | total=' + d.total_hits;
+    const log = document.getElementById('log');
+    log.prepend(line);
+    while (log.children.length > 30) log.removeChild(log.lastChild);
+    render();
+  }
+
+  function render() {
+    const bars = document.getElementById('bars');
+    bars.replaceChildren();
+    const max = Math.max(1, ...Object.values(counts));
+    Object.keys(counts).sort().forEach(name => {
+      const row = document.createElement('div'); row.className = 'row';
+      const n = document.createElement('div'); n.className = 'name'; n.textContent = name;
+      const b = document.createElement('div'); b.className = 'bar'; b.style.width = (counts[name] / max * 60) + '%';
+      const c = document.createElement('div'); c.className = 'num'; c.textContent = counts[name];
+      row.append(n, b, c); bars.append(row);
+    });
+    refreshShared();
+  }
+
+  async function refreshShared() {
+    const r = await fetch('/api/stats', { cache: 'no-store' });
+    const d = await r.json();
+    document.getElementById('shared').textContent = JSON.stringify(d.hits) + '  total=' + d.total;
+  }
+
+  document.getElementById('one').onclick = hit;
+  document.getElementById('twenty').onclick = async () => { for (let i = 0; i < 20; i++) await hit(); };
+  document.getElementById('auto').onclick = (e) => {
+    if (timer) { clearInterval(timer); timer = null; e.target.textContent = 'Auto: off'; }
+    else { timer = setInterval(hit, 1000); e.target.textContent = 'Auto: on'; }
+  };
+  document.getElementById('reset').onclick = async () => {
+    await fetch('/api/reset', { method: 'POST' });
+    Object.keys(counts).forEach(k => delete counts[k]);
+    document.getElementById('log').replaceChildren();
+    render();
+  };
+  refreshShared();
+</script>
+</body>
+</html>

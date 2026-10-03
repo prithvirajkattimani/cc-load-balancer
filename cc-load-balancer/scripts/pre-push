@@ -1,0 +1,5 @@
+#!/bin/sh
+# Local safety net: blocks `git push` if tests fail.
+# Install: cp scripts/pre-push .git/hooks/pre-push && chmod +x .git/hooks/pre-push
+echo "Running tests before push..."
+python -m pytest -q || { echo "Tests failed - push blocked."; exit 1; }
