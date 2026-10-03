@@ -66,12 +66,13 @@ def create_app(store=None):
     @app.get("/api/whoami")
     def whoami():
         mine = store.incr(instance)
-        total = sum(store.all().values())
+        hits = store.all()
         return jsonify(
             instance=instance,
             hostname=socket.gethostname(),
             instance_hits=mine,
-            total_hits=total,
+            total_hits=sum(hits.values()),
+            hits=hits,
         )
 
     @app.get("/api/stats")

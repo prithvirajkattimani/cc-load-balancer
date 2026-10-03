@@ -61,3 +61,9 @@ def test_unknown_route_returns_json_404(client):
     r = client.get("/nope")
     assert r.status_code == 404
     assert r.get_json() == {"error": "not found"}
+
+
+def test_whoami_includes_all_instance_hits(client):
+    """Dashboard reads counters from /api/whoami so it needs no extra request."""
+    data = client.get("/api/whoami").get_json()
+    assert data["hits"] == {"test-1": 1}
