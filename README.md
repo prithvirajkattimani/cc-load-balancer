@@ -52,7 +52,6 @@ Dockerfile          app image
 docker-compose.yml  full stack
 .github/workflows/  CI/CD pipeline
 scripts/pre-push    local git hook that blocks push on failing tests
-docs/PRESENTATION.md  2-3 min presentation script + viva Q&A
 ```
 
 ## How to run (local)
